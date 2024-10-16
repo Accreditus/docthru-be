@@ -100,7 +100,7 @@ export const ChallengeService = {
 
     return updatedChallenge;
   },
-  deleteChallengeById: async (challengeId) => {
+  deleteChallengeById: async (challengeId, message) => {
     const challenge = await prisma.challenge.findUnique({
       where: { id: parseInt(challengeId, 10) },
     });
@@ -112,6 +112,7 @@ export const ChallengeService = {
       where: { challengeId: parseInt(challengeId, 10) },
       data: {
         status: 'DELETED',
+        message: message,
       },
     });
   },
@@ -137,6 +138,9 @@ export const ChallengeService = {
     if (!challenge) {
       throw new NotFoundException('챌린지가 없습니다.');
     }
+    if (challenge.progress === true) {
+      throw new BadRequestException('마감 된 챌린지 입니다.');
+    }
     const isAlreadyParticipating = challenge.participations.some(
       (participations) => participations.userId === userId
     );
@@ -157,12 +161,12 @@ export const ChallengeService = {
       challengeId: parseInt(challengeId, 10),
       userId,
     };
-    const participations = await prisma.participations.create({ data });
+    const Participation = await prisma.Participation.create({ data });
 
     await prisma.challenge.update({
       where: { id: parseInt(challengeId, 10) },
       data: { participants: { increment: 1 } },
     });
-    return participations;
+    return Participation;
   },
 };
