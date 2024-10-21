@@ -26,7 +26,9 @@ const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 const allowedOrigins = [
   CLIENT_URL,
   'http://localhost:3000',
+  'http://localhost:3001',
   'https://vercel.live',
+  'https://docthru-be.vercel.app/',
 ];
 
 const corsOptions = {
