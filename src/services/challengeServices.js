@@ -60,7 +60,7 @@ export const ChallengeService = {
     };
   },
 
-  getChallengeById: async (challengeId) => {
+  getChallengeById: async (challengeId, userId) => {
     const challenge = await prisma.challenge.findUnique({
       where: { id: parseInt(challengeId, 10) },
       include: {
@@ -70,12 +70,20 @@ export const ChallengeService = {
             grade: true,
           },
         },
+        participations: {
+          select: {
+            userId: true,
+          },
+        },
       },
     });
 
     if (!challenge) {
       throw new NotFoundException('챌린지가 없습니다.');
     }
+    const isParticipated = challenge.participations.some(
+      (participations) => participations.userId === userId
+    );
     const { user, ...rest } = challenge;
     const processedChallenge = {
       ...rest,
@@ -85,6 +93,7 @@ export const ChallengeService = {
             grade: user.grade,
           }
         : null,
+      isParticipated,
     };
 
     return processedChallenge;
