@@ -8,11 +8,12 @@ export async function getChallenges(req, res, next) {
     const limit = parseInt(req.query.limit) || 10;
     const sortBy = req.query.orderByField || 'id';
     const sortOrder = req.query.orderByDir || 'asc';
-    const field = req.body.field || undefined;
-    const docType = req.body.docType || undefined;
-    const progress = req.body.progress
-      ? req.body.progress === 'true'
+    const field = req.query.field ? req.query.field.split(',') : undefined;
+    const docType = req.query.docType || undefined;
+    const progress = req.query.progress
+      ? req.query.progress === 'true'
       : undefined;
+    const keyword = req.query.keyword || undefined;
 
     const result = await ChallengeService.getChallenges({
       page,
@@ -22,6 +23,7 @@ export async function getChallenges(req, res, next) {
       field,
       docType,
       progress,
+      keyword,
     });
     return res.status(200).json(result);
   } catch (error) {
