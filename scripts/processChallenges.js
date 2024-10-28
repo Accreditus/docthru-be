@@ -19,8 +19,10 @@ async function processChallenges() {
             userId: true,
             user: {
               select: {
+                id: true,
                 works: {
-                  where: {
+                  select: {
+                    id: true,
                     challengeId: true,
                   },
                 },
@@ -31,7 +33,11 @@ async function processChallenges() {
         works: {
           select: {
             userId: true,
-            _count: { select: { likes: true } },
+            _count: {
+              select: {
+                likes: true,
+              },
+            },
           },
         },
       },
@@ -47,6 +53,11 @@ async function processChallenges() {
 
     challengesToClose.forEach((challenge) => {
       challenge.participations.forEach((participation) => {
+        // 해당 챌린지에 대한 사용자의 작업 확인
+        const userWorks = participation.user.works.filter(
+          (work) => work.challengeId === challenge.id
+        );
+
         notifications.push({
           userId: participation.userId,
           type: 'DEADLINE',
@@ -58,7 +69,7 @@ async function processChallenges() {
           isRead: false,
         });
 
-        if (participation.user.works.length > 0) {
+        if (userWorks.length > 0) {
           joinCountUpdates.add(participation.userId);
         }
 
@@ -69,8 +80,9 @@ async function processChallenges() {
         ...challenge.works.map((w) => w._count.likes),
         0
       );
+
       challenge.works.forEach((work) => {
-        if (work._count.likes === maxLikes) {
+        if (work._count.likes === maxLikes && maxLikes > 0) {
           bestCountUpdates.set(
             work.userId,
             (bestCountUpdates.get(work.userId) || 0) + 1
